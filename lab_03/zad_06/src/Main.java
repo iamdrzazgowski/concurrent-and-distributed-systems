@@ -5,12 +5,14 @@ class Filozof extends Thread {
     private Semaphore left;
     private Semaphore right;
     private Semaphore jadalnia;
+    private boolean asymetryczny;
 
-    public Filozof(int id, Semaphore left, Semaphore right, Semaphore jadalnia) {
+    public Filozof(int id, Semaphore left, Semaphore right, boolean asymetryczny) {
         this.id = id;
         this.left = left;
         this.right = right;
-        this.jadalnia = jadalnia;
+//        this.jadalnia = jadalnia;
+        this.asymetryczny = asymetryczny;
     }
 
     private void myslenie() throws InterruptedException {
@@ -28,13 +30,21 @@ class Filozof extends Thread {
             while(true){
                 myslenie();
 
-                jadalnia.acquire();
+//                jadalnia.acquire();
 
-                left.acquire();
-                System.out.println("Filozof " + id + " bierze lewy widelec");
+                if(asymetryczny){
+                    left.acquire();
+                    System.out.println("Filozof " + id + " bierze lewy widelec");
 
-                right.acquire();
-                System.out.println("Filozof " + id + " bierze prawy widelec");
+                    right.acquire();
+                    System.out.println("Filozof " + id + " bierze prawy widelec");
+                }else{
+                    right.acquire();
+                    System.out.println("Filozof " + id + " bierze prawy widelec");
+
+                    left.acquire();
+                    System.out.println("Filozof " + id + " bierze lewy widelec");
+                }
 
                 jedzenie();
 
@@ -43,7 +53,7 @@ class Filozof extends Thread {
                 System.out.println("Filozof " + id + " odłożył widelce");
 
                 System.out.println("Filozof " + id + " skończył jeść");
-                jadalnia.release();
+//                jadalnia.release();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -66,7 +76,9 @@ public class Main {
             Semaphore left = widelce[i];
             Semaphore right = widelce[(i + 1) % 5];
 
-            filozofowie[i] = new Filozof(i, left, right, jadalnia);
+            boolean asymetryczny = (i == 0);
+
+            filozofowie[i] = new Filozof(i, left, right, asymetryczny);
             filozofowie[i].start();
         }
     }
