@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 class Filozof extends Thread {
@@ -6,6 +7,7 @@ class Filozof extends Thread {
     private Semaphore right;
     private Semaphore jadalnia;
     private boolean asymetryczny;
+    private Random random = new Random();
 
     public Filozof(int id, Semaphore left, Semaphore right, boolean asymetryczny) {
         this.id = id;
@@ -32,27 +34,57 @@ class Filozof extends Thread {
 
 //                jadalnia.acquire();
 
-                if(asymetryczny){
-                    left.acquire();
-                    System.out.println("Filozof " + id + " bierze lewy widelec");
+                Semaphore pierwszy;
+                Semaphore drugi;
 
-                    right.acquire();
-                    System.out.println("Filozof " + id + " bierze prawy widelec");
+                boolean lewyPierwszy = random.nextBoolean();
+
+                if(lewyPierwszy){
+                    pierwszy = left;
+                    drugi = right;
                 }else{
-                    right.acquire();
-                    System.out.println("Filozof " + id + " bierze prawy widelec");
-
-                    left.acquire();
-                    System.out.println("Filozof " + id + " bierze lewy widelec");
+                    pierwszy = right;
+                    drugi = left;
                 }
 
-                jedzenie();
+                pierwszy.acquire();
+                System.out.println("Filozof " + id + " podniosl pierwszy widelec");
 
-                left.release();
-                right.release();
-                System.out.println("Filozof " + id + " odłożył widelce");
+                if(drugi.tryAcquire()){
+                    System.out.println("Filozof " + id + " podniosl drugi widelec");
 
-                System.out.println("Filozof " + id + " skończył jeść");
+                    jedzenie();
+                    drugi.release();
+                    pierwszy.release();
+
+                    System.out.println("Filozof " + id + " odlozyl widelce");
+                }else{
+                    System.out.println("Filozof " + id + " nie mogl podniesc drugiego widelca");
+                    pierwszy.release();
+                    Thread.sleep(1000);
+                }
+
+//                if(asymetryczny){
+//                    left.acquire();
+//                    System.out.println("Filozof " + id + " bierze lewy widelec");
+//
+//                    right.acquire();
+//                    System.out.println("Filozof " + id + " bierze prawy widelec");
+//                }else{
+//                    right.acquire();
+//                    System.out.println("Filozof " + id + " bierze prawy widelec");
+//
+//                    left.acquire();
+//                    System.out.println("Filozof " + id + " bierze lewy widelec");
+//                }
+
+//                jedzenie();
+//
+//                left.release();
+//                right.release();
+//                System.out.println("Filozof " + id + " odłożył widelce");
+//
+//                System.out.println("Filozof " + id + " skończył jeść");
 //                jadalnia.release();
             }
         } catch (InterruptedException e) {
